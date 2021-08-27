@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		851A12D826D89CF100D39B8F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851A12D726D89CF100D39B8F /* AppDelegate.swift */; };
 		851A12DA26D89CF100D39B8F /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 851A12D926D89CF100D39B8F /* GameScene.sks */; };
-		851A12DC26D89CF100D39B8F /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = 851A12DB26D89CF100D39B8F /* Actions.sks */; };
 		851A12DE26D89CF100D39B8F /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851A12DD26D89CF100D39B8F /* GameScene.swift */; };
 		851A12E026D89CF100D39B8F /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851A12DF26D89CF100D39B8F /* GameViewController.swift */; };
 		851A12E326D89CF100D39B8F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 851A12E126D89CF100D39B8F /* Main.storyboard */; };
@@ -20,7 +19,6 @@
 		851A12D426D89CF100D39B8F /* Marbly.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marbly.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		851A12D726D89CF100D39B8F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		851A12D926D89CF100D39B8F /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameScene.sks; sourceTree = "<group>"; };
-		851A12DB26D89CF100D39B8F /* Actions.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = Actions.sks; sourceTree = "<group>"; };
 		851A12DD26D89CF100D39B8F /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
 		851A12DF26D89CF100D39B8F /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		851A12E226D89CF100D39B8F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -60,7 +58,6 @@
 			children = (
 				851A12D726D89CF100D39B8F /* AppDelegate.swift */,
 				851A12D926D89CF100D39B8F /* GameScene.sks */,
-				851A12DB26D89CF100D39B8F /* Actions.sks */,
 				851A12DD26D89CF100D39B8F /* GameScene.swift */,
 				851A12DF26D89CF100D39B8F /* GameViewController.swift */,
 				851A12E126D89CF100D39B8F /* Main.storyboard */,
@@ -130,7 +127,6 @@
 				851A12E326D89CF100D39B8F /* Main.storyboard in Resources */,
 				851A12DA26D89CF100D39B8F /* GameScene.sks in Resources */,
 				851A12E526D89CF500D39B8F /* Assets.xcassets in Resources */,
-				851A12DC26D89CF100D39B8F /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,7 +288,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.atinagnihotri.Marbly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
 		};
@@ -311,7 +307,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.atinagnihotri.Marbly;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;
 		};
