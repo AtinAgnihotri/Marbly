@@ -14,6 +14,7 @@
 		851A12E326D89CF100D39B8F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 851A12E126D89CF100D39B8F /* Main.storyboard */; };
 		851A12E526D89CF500D39B8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 851A12E426D89CF500D39B8F /* Assets.xcassets */; };
 		851A12F326D92B0700D39B8F /* level1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 851A12F226D92B0700D39B8F /* level1.txt */; };
+		851A12F526D947F900D39B8F /* level2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 851A12F426D947F900D39B8F /* level2.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		851A12E426D89CF500D39B8F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		851A12E626D89CF500D39B8F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		851A12F226D92B0700D39B8F /* level1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = level1.txt; sourceTree = "<group>"; };
+		851A12F426D947F900D39B8F /* level2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = level2.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +60,7 @@
 		851A12D626D89CF100D39B8F /* Marbly */ = {
 			isa = PBXGroup;
 			children = (
+				851A12F626D9480100D39B8F /* Levels */,
 				851A12D726D89CF100D39B8F /* AppDelegate.swift */,
 				851A12D926D89CF100D39B8F /* GameScene.sks */,
 				851A12DD26D89CF100D39B8F /* GameScene.swift */,
@@ -65,9 +68,17 @@
 				851A12E126D89CF100D39B8F /* Main.storyboard */,
 				851A12E426D89CF500D39B8F /* Assets.xcassets */,
 				851A12E626D89CF500D39B8F /* Info.plist */,
-				851A12F226D92B0700D39B8F /* level1.txt */,
 			);
 			path = Marbly;
+			sourceTree = "<group>";
+		};
+		851A12F626D9480100D39B8F /* Levels */ = {
+			isa = PBXGroup;
+			children = (
+				851A12F226D92B0700D39B8F /* level1.txt */,
+				851A12F426D947F900D39B8F /* level2.txt */,
+			);
+			path = Levels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -127,6 +138,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				851A12F526D947F900D39B8F /* level2.txt in Resources */,
 				851A12E326D89CF100D39B8F /* Main.storyboard in Resources */,
 				851A12F326D92B0700D39B8F /* level1.txt in Resources */,
 				851A12DA26D89CF100D39B8F /* GameScene.sks in Resources */,

@@ -31,6 +31,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var teleportEntry: SKSpriteNode!
     var teleportExit: SKSpriteNode!
     
+    var levelItems = [SKNode]()
+    
     var score = 0 {
         didSet {
             scoreLabel.text = "Score: \(score)"
@@ -49,10 +51,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
+    var level = 0 {
+        didSet {
+            if level > 2 {
+                gameOver()
+            } else {
+                loadLevel(level)
+            }
+        }
+    }
     
     override func didMove(to view: SKView) {
         addScoreLabel()
-        loadLevel(1)
+        level = 1
     }
     
     override func update(_ currentTime: TimeInterval) {
@@ -76,6 +87,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func loadLevel(_ level: Int) {
+        
+        lastTouchPosition = nil
+        
+        removePreviousLevelItemsIfAvailable()
+        
         addBackground()
         
         let levelData = loadLevelFile(level)
@@ -158,6 +174,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         wall.physicsBody?.categoryBitMask = CollisionTypes.wall.rawValue
         wall.physicsBody?.collisionBitMask = CollisionTypes.player.rawValue
         addChild(wall)
+        levelItems.append(wall)
     }
     
     func addVortex(at location: CGPoint) {
@@ -175,6 +192,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         vortex.name = "vortex"
         addChild(vortex)
+        levelItems.append(vortex)
     }
     
     func addStar(at location: CGPoint) {
@@ -189,6 +207,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         star.name = "star"
         addChild(star)
+        levelItems.append(star)
     }
     
     func addFinishTile(at location: CGPoint) {
@@ -202,6 +221,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         finish.physicsBody?.collisionBitMask = 0
         finish.name = "finish"
         addChild(finish)
+        levelItems.append(finish)
     }
     
     func addPlayer(at location: CGPoint) {
@@ -216,6 +236,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.physicsBody?.collisionBitMask = CollisionTypes.wall.rawValue
         
         addChild(player)
+        levelItems.append(player)
     }
     
     /* Simulator Hacks */
@@ -322,12 +343,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func playerDidCollideWithFinish(_ finish: SKNode) {
         score += 10
         
-        player.physicsBody?.isDynamic = false
+        playerMovable = false
         
         var pickup = getPickUpActions()
         let gameOver = SKAction.run { [weak self] in
             self?.player.removeFromParent()
-            self?.gameOver()
+            self?.level += 1
         }
         pickup.append(gameOver)
         let sequence = SKAction.sequence(pickup)
@@ -427,6 +448,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         teleport.physicsBody?.contactTestBitMask = CollisionTypes.player.rawValue
         teleport.physicsBody?.collisionBitMask = 0
         addChild(teleport)
+        levelItems.append(teleport)
         if isEntry {
             teleportEntry = teleport
             teleportEntry.color = .green
@@ -435,6 +457,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             teleportExit = teleport
             teleportExit.color = .blue
             teleportExit.name = "teleportExit"
+        }
+    }
+    
+    func removePreviousLevelItemsIfAvailable() {
+        if !levelItems.isEmpty {
+            for item in levelItems {
+                item.removeFromParent()
+            }
         }
     }
     
