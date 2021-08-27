@@ -18,6 +18,9 @@ enum CollisionTypes: UInt32 {
 
 class GameScene: SKScene {
     
+    var player: SKSpriteNode!
+    var lastTouchPosition: CGPoint?
+    
     override func didMove(to view: SKView) {
         loadLevel(1)
     }
@@ -32,6 +35,11 @@ class GameScene: SKScene {
         let levelData = loadLevelFile(level)
 
         addElements(for: levelData)
+        
+        // Make Player Loc Dynamic
+        addPlayer(at: CGPoint(x: 96, y: 672))
+        
+        physicsWorld.gravity = .zero
     }
     
     func loadLevelFile(_ level: Int) -> String {
@@ -73,7 +81,7 @@ class GameScene: SKScene {
         case "s":
             addStar(at: location)
         case " ":
-            return
+           return
         default:
             fatalError("Unknown letter \(letter) in level data")
         }
@@ -88,16 +96,18 @@ class GameScene: SKScene {
     func addWall(at location: CGPoint) {
         let wall = SKSpriteNode(imageNamed: "block")
         wall.position = location
+        wall.zPosition = 0
         wall.physicsBody = SKPhysicsBody(rectangleOf: wall.size)
-        wall.physicsBody?.categoryBitMask = CollisionTypes.wall.rawValue
         wall.physicsBody?.isDynamic = false
-        wall.physicsBody?.categoryBitMask = 0
+        wall.physicsBody?.categoryBitMask = CollisionTypes.wall.rawValue
+        wall.physicsBody?.collisionBitMask = CollisionTypes.player.rawValue
         addChild(wall)
     }
     
     func addVortex(at location: CGPoint) {
         let vortex = SKSpriteNode(imageNamed: "vortex")
         vortex.position = location
+        vortex.zPosition = 0
         vortex.physicsBody = SKPhysicsBody(circleOfRadius: vortex.size.width / 2)
         vortex.physicsBody?.isDynamic = false
         vortex.physicsBody?.categoryBitMask = CollisionTypes.vortex.rawValue
@@ -115,6 +125,7 @@ class GameScene: SKScene {
     func addStar(at location: CGPoint) {
         let star = SKSpriteNode(imageNamed: "star")
         star.position = location
+        star.zPosition = 0
         star.physicsBody = SKPhysicsBody(rectangleOf: star.size)
         star.physicsBody?.isDynamic = false
         star.physicsBody?.categoryBitMask = CollisionTypes.star.rawValue
@@ -128,6 +139,7 @@ class GameScene: SKScene {
     func addFinishTile(at location: CGPoint) {
         let finish = SKSpriteNode(imageNamed: "finish")
         finish.position = location
+        finish.zPosition = 0
         finish.physicsBody = SKPhysicsBody(rectangleOf: finish.frame.size)
         finish.physicsBody?.isDynamic = false
         finish.physicsBody?.categoryBitMask = CollisionTypes.finish.rawValue
@@ -136,4 +148,19 @@ class GameScene: SKScene {
         finish.name = "finish"
         addChild(finish)
     }
+    
+    func addPlayer(at location: CGPoint) {
+        player = SKSpriteNode(imageNamed: "player")
+        player.position = location
+        
+        player.physicsBody = SKPhysicsBody(circleOfRadius: player.size.width / 2)
+        player.physicsBody?.allowsRotation = false
+        player.physicsBody?.linearDamping = 0.5
+        player.physicsBody?.categoryBitMask = CollisionTypes.player.rawValue
+        player.physicsBody?.contactTestBitMask = CollisionTypes.star.rawValue | CollisionTypes.vortex.rawValue | CollisionTypes.finish.rawValue
+        player.physicsBody?.collisionBitMask = CollisionTypes.wall.rawValue
+        
+        addChild(player)
+    }
+    
 }
