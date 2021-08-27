@@ -6,7 +6,7 @@
 //
 
 import SpriteKit
-import GameplayKit
+import CoreMotion
 
 enum CollisionTypes: UInt32 {
     case player = 1
@@ -14,19 +14,65 @@ enum CollisionTypes: UInt32 {
     case star = 4
     case vortex = 8
     case finish = 16
+    case teleport = 32
 }
 
-class GameScene: SKScene {
+class GameScene: SKScene, SKPhysicsContactDelegate {
+    
+    let TOUCH_FACTOR: CGFloat = 1/100
+    let ACCELEROMETER_FACTOR: Double = 50
+    let ANIMATION_DURATION: TimeInterval = 0.25
     
     var player: SKSpriteNode!
+    var scoreLabel: SKLabelNode!
     var lastTouchPosition: CGPoint?
     
+    var motionManager: CMMotionManager?
+    var teleportEntry: SKSpriteNode!
+    var teleportExit: SKSpriteNode!
+    
+    var score = 0 {
+        didSet {
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
+    var playerMovable = true {
+        didSet {
+            player.physicsBody?.isDynamic = playerMovable
+        }
+    }
+    var isGameOver = false {
+        didSet {
+            if isGameOver {
+                playerMovable = false
+                gameOver()
+            }
+        }
+    }
+    
     override func didMove(to view: SKView) {
+        addScoreLabel()
         loadLevel(1)
     }
     
     override func update(_ currentTime: TimeInterval) {
-        // Called before each frame is rendered
+        if !isGameOver {
+            #if targetEnvironment(simulator)
+            setGravityToLastTouch()
+            #else
+            setGravityToAccelerometerData()
+            #endif
+        }
+    }
+    
+    func addScoreLabel() {
+        scoreLabel = SKLabelNode(fontNamed: "Chalkduster")
+        scoreLabel.horizontalAlignmentMode = .left
+        scoreLabel.position = CGPoint(x: 16, y: 16)
+        scoreLabel.zPosition = 2
+        addChild(scoreLabel)
+        
+        score = 0
     }
     
     func loadLevel(_ level: Int) {
@@ -36,10 +82,16 @@ class GameScene: SKScene {
 
         addElements(for: levelData)
         
-        // Make Player Loc Dynamic
+        // todo: Make Player Loc Dynamic
         addPlayer(at: CGPoint(x: 96, y: 672))
         
         physicsWorld.gravity = .zero
+        physicsWorld.contactDelegate = self
+        
+        if motionManager == nil {
+            motionManager = CMMotionManager()
+        }
+        motionManager?.startAccelerometerUpdates()
     }
     
     func loadLevelFile(_ level: Int) -> String {
@@ -80,6 +132,10 @@ class GameScene: SKScene {
             addFinishTile(at: location)
         case "s":
             addStar(at: location)
+        case "1":
+            addTeleportEntry(at: location)
+        case "2":
+            addTeleportExit(at: location)
         case " ":
            return
         default:
@@ -114,8 +170,7 @@ class GameScene: SKScene {
         vortex.physicsBody?.contactTestBitMask = CollisionTypes.player.rawValue
         vortex.physicsBody?.collisionBitMask = 0 // Bounces off nothing
         
-        let rotation = SKAction.rotate(byAngle: .pi, duration: 1)
-        let rotateForever = SKAction.repeatForever(rotation)
+        let rotateForever = getVortexRotation()
         vortex.run(rotateForever)
         
         vortex.name = "vortex"
@@ -152,15 +207,235 @@ class GameScene: SKScene {
     func addPlayer(at location: CGPoint) {
         player = SKSpriteNode(imageNamed: "player")
         player.position = location
-        
+        player.zPosition = 1
         player.physicsBody = SKPhysicsBody(circleOfRadius: player.size.width / 2)
         player.physicsBody?.allowsRotation = false
         player.physicsBody?.linearDamping = 0.5
         player.physicsBody?.categoryBitMask = CollisionTypes.player.rawValue
-        player.physicsBody?.contactTestBitMask = CollisionTypes.star.rawValue | CollisionTypes.vortex.rawValue | CollisionTypes.finish.rawValue
+        player.physicsBody?.contactTestBitMask = CollisionTypes.star.rawValue | CollisionTypes.vortex.rawValue | CollisionTypes.finish.rawValue | CollisionTypes.teleport.rawValue
         player.physicsBody?.collisionBitMask = CollisionTypes.wall.rawValue
         
         addChild(player)
+    }
+    
+    /* Simulator Hacks */
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        setLastTouchPosition(for: touches)
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        setLastTouchPosition(for: touches)
+    }
+    
+    override func touchesEstimatedPropertiesUpdated(_ touches: Set<UITouch>) {
+        lastTouchPosition = nil
+    }
+    
+    func setLastTouchPosition(for touches: Set<UITouch>) {
+        guard let touch = touches.first else { return }
+        let location = touch.location(in: self)
+        lastTouchPosition = location
+    }
+        
+    func setGravityToLastTouch() {
+        if let lastTouchPosition = lastTouchPosition {
+            let xDiff = lastTouchPosition.x - player.position.x
+            let yDiff = lastTouchPosition.y - player.position.y
+            physicsWorld.gravity = CGVector(dx: xDiff / 100, dy: yDiff / 100)
+        }
+    }
+    
+    func setGravityToAccelerometerData() {
+        if let accelerometerData = motionManager?.accelerometerData {
+            let acceleration = accelerometerData.acceleration
+            // Switching X and Y as the device is flipped
+            // Y axis is also inverted, thus multiply by -ve
+            let xDiff = acceleration.y * ACCELEROMETER_FACTOR * -1
+            let yDiff = acceleration.x * ACCELEROMETER_FACTOR
+            physicsWorld.gravity = CGVector(dx: xDiff, dy: yDiff)
+        }
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        guard let nodeA = contact.bodyA.node else { return }
+        guard let nodeB = contact.bodyB.node else { return }
+        if nodeA == player {
+            playerCollided(with: nodeB)
+        } else if nodeB == player {
+            playerCollided(with: nodeA)
+        }
+    }
+    
+    func playerCollided(with node: SKNode) {
+        if node.name == "star" {
+            playerDidCollideWithStar(node)
+        } else if node.name == "vortex" {
+            playerDidCollideWithVortex(node)
+        } else if node.name == "finish" {
+            playerDidCollideWithFinish(node)
+        } else if node.name == "teleportEntry" {
+            playerDidCollideWithTeleportEntry()
+        }
+//        else if node.name == "teleportExit" {
+//            playerDidCollideWithTeleportExit()
+//        }
+    }
+    
+    func playerDidCollideWithVortex(_ vortex: SKNode) {
+        if vortex.hasActions() {
+            vortex.removeAllActions()
+            vortex.run(getVortexRotation())
+        }
+        print("Player collided with Vortex")
+        score -= 1
+        print("did reach here")
+        playerMovable = false
+        
+        let moveIn = SKAction.move(to: vortex.position, duration: ANIMATION_DURATION)
+        let scaleDown = SKAction.scale(to: 0.001, duration: ANIMATION_DURATION)
+        let remove = SKAction.removeFromParent()
+        let restart = SKAction.run { [weak self] in
+            // todo Make this dynamic
+            self?.addPlayer(at: CGPoint(x: 96, y: 672))
+//            self?.player.speed = 0
+            self?.player.physicsBody?.velocity = .zero
+            self?.physicsWorld.gravity = .zero
+            self?.playerMovable = true
+            self?.lastTouchPosition = nil
+            print("Respawned player")
+        }
+        
+        print("did reach here")
+        
+        let actionSequence = SKAction.sequence([moveIn, scaleDown, remove, restart])
+        
+        player.run(actionSequence)
+    }
+    
+    func playerDidCollideWithStar(_ star: SKNode) {
+        score += 1
+        
+        let pickup = SKAction.sequence(getPickUpActions())
+        star.run(pickup)
+    }
+    
+    func playerDidCollideWithFinish(_ finish: SKNode) {
+        score += 10
+        
+        player.physicsBody?.isDynamic = false
+        
+        var pickup = getPickUpActions()
+        let gameOver = SKAction.run { [weak self] in
+            self?.player.removeFromParent()
+            self?.gameOver()
+        }
+        pickup.append(gameOver)
+        let sequence = SKAction.sequence(pickup)
+        finish.run(sequence)
+    }
+    
+    func playerDidCollideWithTeleportEntry() {
+        teleportPlayer(from: teleportEntry, to: teleportExit)
+    }
+    
+    func playerDidCollideWithTeleportExit() {
+        teleportPlayer(from: teleportExit, to: teleportEntry)
+    }
+    
+    func teleportPlayer(from entry: SKSpriteNode, to exit: SKSpriteNode) {
+        playerMovable = false
+        var actions = [SKAction]()
+        actions += getSuckInAction(at: entry.position) // Suck In
+        actions += getSuckOutAction(at: exit.position) // Suck Out
+        let makePlayerMovable = SKAction.run { [weak self] in
+            self?.playerMovable = true
+        }
+        actions.append(makePlayerMovable)
+        let actionSequence = SKAction.sequence(actions)
+        player.run(actionSequence)
+    }
+    
+    func getPickUpActions() -> [SKAction] {
+        let scaleUp = SKAction.scale(to: 1.5, duration: ANIMATION_DURATION)
+        let fadeOut = SKAction.fadeAlpha(to: 0, duration: ANIMATION_DURATION)
+        let hitFX = SKAction.group([scaleUp, fadeOut])
+        let removeFromParent = SKAction.removeFromParent()
+        return [hitFX, removeFromParent]
+    }
+    
+    func gameOver() {
+        addGameOverLabels()
+        scoreLabel.removeFromParent()
+    }
+    
+    func addGameOverLabels() {
+        let centerX = 512
+        let centerY = 384
+        let displacedY = 200
+        let centerLoc = CGPoint(x: centerX, y: centerY)
+        let displacedLoc = CGPoint(x: centerX, y: displacedY)
+        
+        addGameOverLabel(with: "GAME OVER", at: centerLoc, fontSized: 44)
+        addGameOverLabel(with: "Final score: \(score)", at: displacedLoc)
+    }
+    
+    func addGameOverLabel(with text: String, at location: CGPoint, fontSized fontSize: CGFloat = 36) {
+        let goLabel = SKLabelNode(fontNamed: "Chalkduster")
+        goLabel.fontSize = fontSize
+        goLabel.horizontalAlignmentMode = .center
+        goLabel.position = location
+        goLabel.zPosition = 2
+        goLabel.text = text
+        addChild(goLabel)
+    }
+    
+    func getVortexRotation() -> SKAction {
+        let rotation = SKAction.rotate(byAngle: .pi, duration: 1)
+        return SKAction.repeatForever(rotation)
+    }
+    
+    func getSuckInAction(at location: CGPoint) -> [SKAction] {
+        let moveIn = SKAction.move(to: location, duration: ANIMATION_DURATION)
+        let scaleDown = SKAction.scale(to: 0.001, duration: ANIMATION_DURATION)
+        return [moveIn, scaleDown]
+    }
+    
+    func getSuckOutAction(at location: CGPoint) -> [SKAction] {
+        let moveTo = SKAction.move(to: location, duration: ANIMATION_DURATION)
+        let scaleUp = SKAction.scale(to: 1, duration: ANIMATION_DURATION)
+        lastTouchPosition = nil
+        return [moveTo, scaleUp]
+    }
+    
+    func addTeleportEntry(at location: CGPoint) {
+        addTeleport(at: location, isEntry: true)
+    }
+    
+    func addTeleportExit(at location: CGPoint) {
+        addTeleport(at: location, isEntry: false)
+    }
+    
+    func addTeleport(at location: CGPoint, isEntry: Bool) {
+        let teleport = SKSpriteNode(imageNamed: "vortex")
+        teleport.colorBlendFactor = 0.8
+
+        teleport.position = location
+        teleport.run(getVortexRotation())
+        teleport.physicsBody = SKPhysicsBody(circleOfRadius: teleport.size.width / 2)
+        teleport.physicsBody?.isDynamic = false
+        teleport.physicsBody?.categoryBitMask = CollisionTypes.teleport.rawValue
+        teleport.physicsBody?.contactTestBitMask = CollisionTypes.player.rawValue
+        teleport.physicsBody?.collisionBitMask = 0
+        addChild(teleport)
+        if isEntry {
+            teleportEntry = teleport
+            teleportEntry.color = .green
+            teleportEntry.name = "teleportEntry"
+        } else {
+            teleportExit = teleport
+            teleportExit.color = .blue
+            teleportExit.name = "teleportExit"
+        }
     }
     
 }

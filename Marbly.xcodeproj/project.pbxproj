@@ -13,7 +13,7 @@
 		851A12E026D89CF100D39B8F /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851A12DF26D89CF100D39B8F /* GameViewController.swift */; };
 		851A12E326D89CF100D39B8F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 851A12E126D89CF100D39B8F /* Main.storyboard */; };
 		851A12E526D89CF500D39B8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 851A12E426D89CF500D39B8F /* Assets.xcassets */; };
-		851A12ED26D8B44E00D39B8F /* level1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 851A12EC26D8B44E00D39B8F /* level1.txt */; };
+		851A12F326D92B0700D39B8F /* level1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 851A12F226D92B0700D39B8F /* level1.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,7 +25,7 @@
 		851A12E226D89CF100D39B8F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		851A12E426D89CF500D39B8F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		851A12E626D89CF500D39B8F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		851A12EC26D8B44E00D39B8F /* level1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = level1.txt; sourceTree = "<group>"; };
+		851A12F226D92B0700D39B8F /* level1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = level1.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,7 +65,7 @@
 				851A12E126D89CF100D39B8F /* Main.storyboard */,
 				851A12E426D89CF500D39B8F /* Assets.xcassets */,
 				851A12E626D89CF500D39B8F /* Info.plist */,
-				851A12EC26D8B44E00D39B8F /* level1.txt */,
+				851A12F226D92B0700D39B8F /* level1.txt */,
 			);
 			path = Marbly;
 			sourceTree = "<group>";
@@ -128,7 +128,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				851A12E326D89CF100D39B8F /* Main.storyboard in Resources */,
-				851A12ED26D8B44E00D39B8F /* level1.txt in Resources */,
+				851A12F326D92B0700D39B8F /* level1.txt in Resources */,
 				851A12DA26D89CF100D39B8F /* GameScene.sks in Resources */,
 				851A12E526D89CF500D39B8F /* Assets.xcassets in Resources */,
 			);
